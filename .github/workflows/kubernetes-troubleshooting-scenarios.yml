@@ -175,4 +175,4 @@ jobs:
     - name: Verify deployments
       run: |
         kubectl get deployments -n ${{ inputs.namespace }}
-        kubectl get pods -n ${{ inputs.namespace }} -w --timeout=60s
+      
