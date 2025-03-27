@@ -1,0 +1,187 @@
+name: Deploy Kubernetes Troubleshooting Scenarios
+
+on:
+  workflow_dispatch:
+    inputs:
+      kubeconfig:
+        description: 'Kubeconfig file content'
+        required: true
+      cluster-name:
+        description: 'Name of the cluster to target'
+        required: true
+        default: 'default-cluster'
+      namespace:
+        description: 'Namespace to deploy to'
+        required: false
+        default: 'troubleshooting-scenarios'
+
+env:
+  IMAGE_NAME: your-registry/k8s-troubleshooting-scenarios
+  IMAGE_TAG: latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Kubernetes tools
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Configure Kubernetes cluster
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ inputs.kubeconfig }}" > ~/.kube/config
+        kubectl config set-context ${{ inputs.cluster-name }} --cluster=${{ inputs.cluster-name }} --user=${{ inputs.cluster-name }}
+        kubectl config use-context ${{ inputs.cluster-name }}
+        kubectl version --client
+
+    - name: Create namespace if needed
+      run: |
+        kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Deploy OOM Killer Scenario
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: oom-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: oom-app
+          template:
+            metadata:
+              labels:
+                app: oom-app
+            spec:
+              containers:
+              - name: oom-container
+                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                env:
+                - name: FAILURE_MODE
+                  value: "oom"
+                resources:
+                  limits:
+                    memory: "128Mi"
+        EOF
+
+    - name: Deploy Missing File Scenario
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: missing-file-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: missing-file-app
+          template:
+            metadata:
+              labels:
+                app: missing-file-app
+            spec:
+              containers:
+              - name: missing-file-container
+                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                env:
+                - name: FAILURE_MODE
+                  value: "missing_file"
+        EOF
+
+    - name: Deploy DNS Issues Scenario
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: dns-issues-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: dns-issues-app
+          template:
+            metadata:
+              labels:
+                app: dns-issues-app
+            spec:
+              dnsPolicy: Default
+              containers:
+              - name: dns-issues-container
+                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                env:
+                - name: FAILURE_MODE
+                  value: "dns"
+        EOF
+
+    - name: Deploy Taints and Tolerations Example
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: tolerations-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: tolerations-app
+          template:
+            metadata:
+              labels:
+                app: tolerations-app
+            spec:
+              tolerations:
+              - key: "dedicated"
+                operator: "Equal"
+                value: "gpu"
+                effect: "NoSchedule"
+              containers:
+              - name: tolerations-container
+                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        EOF
+
+    - name: Deploy Affinity/Anti-affinity Example
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: affinity-deployment
+        spec:
+          replicas: 3
+          selector:
+            matchLabels:
+              app: affinity-app
+          template:
+            metadata:
+              labels:
+                app: affinity-app
+            spec:
+              affinity:
+                podAntiAffinity:
+                  requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                        - affinity-app
+                    topologyKey: "kubernetes.io/hostname"
+              containers:
+              - name: affinity-container
+                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        EOF
+
+    - name: Verify deployments
+      run: |
+        kubectl get deployments -n ${{ inputs.namespace }}
+        kubectl get pods -n ${{ inputs.namespace }} -w --timeout=60s
