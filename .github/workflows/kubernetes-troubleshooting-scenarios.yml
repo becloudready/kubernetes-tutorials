@@ -3,9 +3,6 @@ name: Deploy Kubernetes Troubleshooting Scenarios
 on:
   workflow_dispatch:
     inputs:
-      kubeconfig:
-        description: 'Kubeconfig file content'
-        required: true
       cluster-name:
         description: 'Name of the cluster to target'
         required: true
@@ -34,7 +31,7 @@ jobs:
     - name: Configure Kubernetes cluster
       run: |
         mkdir -p ~/.kube
-        echo "${{ inputs.kubeconfig }}" > ~/.kube/config
+        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
         kubectl config set-context ${{ inputs.cluster-name }} --cluster=${{ inputs.cluster-name }} --user=${{ inputs.cluster-name }}
         kubectl config use-context ${{ inputs.cluster-name }}
         kubectl version --client
