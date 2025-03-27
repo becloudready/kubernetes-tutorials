@@ -1,17 +1,8 @@
 # Use a multi-stage build to keep the final image small
-FROM alpine:3.15 as builder
+FROM python:3.9-alpine as builder
 
-# Install tools we'll need for our scenarios
-RUN apk add --no-cache stress-ng curl bind-tools busybox-extras
-
-FROM alpine:3.15
-
-# Copy tools from builder
-COPY --from=builder /usr/bin/stress-ng /usr/bin/stress-ng
-COPY --from=builder /usr/bin/curl /usr/bin/curl
-COPY --from=builder /usr/bin/nslookup /usr/bin/nslookup
-COPY --from=builder /usr/bin/dig /usr/bin/dig
-COPY --from=builder /usr/bin/traceroute /usr/bin/traceroute
+# Install build dependencies
+RUN apk add --no-cache build-base
 
 # Create problematic files and directories
 RUN mkdir -p /problematic && \
@@ -19,20 +10,20 @@ RUN mkdir -p /problematic && \
     rm /problematic/missing-file && \
     dd if=/dev/zero of=/problematic/large-file bs=1M count=100
 
-# Create a script that will simulate different failure modes
-COPY simulate-failures.sh /simulate-failures.sh
-RUN chmod +x /simulate-failures.sh
+FROM python:3.9-alpine
 
-# Create a health check that will fail in interesting ways
-COPY health-check.sh /health-check.sh
-RUN chmod +x /health-check.sh
+# Install runtime dependencies
+RUN apk add --no-cache --virtual .runtime-deps curl bind-tools busybox-extras
 
-# Create a script to consume memory
-COPY consume-memory.sh /consume-memory.sh
-RUN chmod +x /consume-memory.sh
+# Copy problematic files from builder
+COPY --from=builder /problematic /problematic
 
-# Create a script with DNS issues
-COPY dns-issues.sh /dns-issues.sh
-RUN chmod +x /dns-issues.sh
+# Install Python dependencies
+RUN pip install --no-cache-dir numpy
 
-CMD ["/simulate-failures.sh"]
+# Copy the Python script
+COPY troubleshoot_scenarios.py /troubleshoot_scenarios.py
+RUN chmod +x /troubleshoot_scenarios.py
+
+# Set the entrypoint
+ENTRYPOINT ["/troubleshoot_scenarios.py"]
