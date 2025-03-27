@@ -62,7 +62,7 @@ jobs:
             spec:
               containers:
               - name: oom-container
-                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                image: becloudready/k8s-troubleshooting-scenarios:1.0.0
                 env:
                 - name: FAILURE_MODE
                   value: "oom"
@@ -90,7 +90,7 @@ jobs:
             spec:
               containers:
               - name: missing-file-container
-                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                image: becloudready/k8s-troubleshooting-scenarios:1.0.0
                 env:
                 - name: FAILURE_MODE
                   value: "missing_file"
@@ -116,7 +116,7 @@ jobs:
               dnsPolicy: Default
               containers:
               - name: dns-issues-container
-                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                image: becloudready/k8s-troubleshooting-scenarios:1.0.0
                 env:
                 - name: FAILURE_MODE
                   value: "dns"
@@ -146,7 +146,7 @@ jobs:
                 effect: "NoSchedule"
               containers:
               - name: tolerations-container
-                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                image: becloudready/k8s-troubleshooting-scenarios:1.0.0
         EOF
 
     - name: Deploy Affinity/Anti-affinity Example
@@ -178,7 +178,7 @@ jobs:
                     topologyKey: "kubernetes.io/hostname"
               containers:
               - name: affinity-container
-                image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+                image: becloudready/k8s-troubleshooting-scenarios:1.0.0
         EOF
 
     - name: Verify deployments
