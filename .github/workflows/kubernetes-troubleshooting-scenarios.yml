@@ -3,10 +3,6 @@ name: Deploy Kubernetes Troubleshooting Scenarios
 on:
   workflow_dispatch:
     inputs:
-      cluster-name:
-        description: 'Name of the cluster to target'
-        required: true
-        default: 'default-cluster'
       namespace:
         description: 'Namespace to deploy to'
         required: false
@@ -32,8 +28,6 @@ jobs:
       run: |
         mkdir -p ~/.kube
         echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-        kubectl config set-context ${{ inputs.cluster-name }} --cluster=${{ inputs.cluster-name }} --user=${{ inputs.cluster-name }}
-        kubectl config use-context ${{ inputs.cluster-name }}
         kubectl version --client
 
     - name: Create namespace if needed
