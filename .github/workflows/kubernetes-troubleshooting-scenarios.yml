@@ -13,8 +13,8 @@ on:
         default: 'troubleshooting-scenarios'
 
 env:
-  IMAGE_NAME: your-registry/k8s-troubleshooting-scenarios
-  IMAGE_TAG: latest
+  IMAGE_NAME: becloudready/k8s-troubleshooting-scenarios
+  IMAGE_TAG: 2.0.0
 
 jobs:
   deploy:
