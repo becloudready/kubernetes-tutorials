@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Kubernetes cluster
         run: |
+         touch /home/runner/.kube/config
          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
          chmod 600 ~/.kube/config
          export KUBECONFIG=~/.kube/config
