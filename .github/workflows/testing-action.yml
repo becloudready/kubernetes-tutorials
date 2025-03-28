@@ -17,11 +17,9 @@ jobs:
       - name: Configure Kubernetes cluster
         run: |
          mkdir -p ~/.kube
-         touch ~/.kube/config
          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-         chmod 600 ~/.kube/config
-         export KUBECONFIG=~/.kube/config
-         kubectl cluster-info  
+         kubectl get pods -A
+          
 
       - name: Run Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v1
