@@ -1,0 +1,23 @@
+name: Debug Kubernetes Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "Namespace to deploy to"
+        required: false
+        default: "troubleshooting"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Kubernetes Troubleshooting Action
+        uses: becloudready/k8s-interview-action@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          namespace: "troubleshooting"
+          failure_mode: "oom"
