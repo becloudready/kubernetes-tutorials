@@ -1,0 +1,54 @@
+
+services:
+  main-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.main
+    image: sre-medium-test:latest
+    container_name: main-app
+    ports:
+      - "8080:8080"  # Expose main app on host port 8080
+    environment:
+      - APP_MODE=flaky
+      - DEPENDENCY_URL=http://dependency-service:8081  # Reference dependency by service name
+      - HEALTH_CHECK_FAIL_RATE=0.2
+      - PORT=8080
+    volumes:
+      - health-volume:/health
+      - log-volume:/logs
+    depends_on:
+      - dependency-service
+    networks:
+      - main-network  # Main app in its own network
+
+  log-sidecar:
+    image: busybox:latest
+    container_name: log-sidecar
+    command: ["sh", "-c", "tail -f /logs/app.log"]
+    volumes:
+      - log-volume:/logs
+    networks:
+      - main-network
+
+  dependency-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dependency
+    image: dependency-service:latest
+    container_name: dependency-service
+    ports:
+      - "8081:8081"  # Expose dependency on host port 8081
+    environment:
+      - PORT=8081
+    networks:
+      - dependency-network  # Dependency in a separate network
+
+volumes:
+  health-volume:
+  log-volume:
+
+networks:
+  main-network:
+    driver: bridge
+  dependency-network:
+    driver: bridge
