@@ -17,7 +17,7 @@ Welcome to the Kubernetes Tutorial Repository! This project is designed to help 
 - Familiarity with Git/GitHub
 - Visual Studio Code
 - Comfortable with Command line interface ( Windows/Linux/Mac )
-- Tools: Minikube/Kind, kubectl, Helm, Command line
+- Tools: Minikube/Kind, kubectl, Helm, Command line, Linux
 
   
 **Learning Outcomes:**
