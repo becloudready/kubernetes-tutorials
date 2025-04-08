@@ -6,29 +6,13 @@ import signal
 import subprocess
 from pathlib import Path
 
-def simulate_oom():
-    """Simulate out-of-memory condition"""
-    print("Simulating out-of-memory condition")
-    try:
-        # Allocate memory aggressively
-        import numpy as np
-        print("Allocating memory using numpy...")
-        chunks = []
-        while True:
-            chunks.append(np.zeros((1024, 1024)))  # Allocate 8MB chunks
-            print(f"Allocated {len(chunks) * 8}MB so far...")
-            time.sleep(0.1)
-    except MemoryError:
-        print("MemoryError occurred - OOM killer likely triggered")
-        return 1
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return 1
+## Try to open a file inside the container
+## Have that file mounted using configmap with small typo 
+## Ensure that configmap is defined into the deployment file
+
 
 def simulate_missing_file():
-    """Simulate missing file error"""
-    print("Simulating missing file error")
-    missing_file = "/problematic/missing-file"
+    missing_file = "/problematic/missing-file1"
     try:
         with open(missing_file, "r") as f:
             content = f.read()
@@ -40,6 +24,10 @@ def simulate_missing_file():
     except Exception as e:
         print(f"Error: {str(e)}")
         return 1
+
+### Ensure you give wrong nameserver in the deployment file
+### In this function try to curl using python request open google.com and throw error message detail enough
+### someone can troubleshoot
 
 def simulate_dns_issues():
     """Simulate DNS resolution problems"""
@@ -75,45 +63,11 @@ def simulate_dns_issues():
             print("Restoring original /etc/resolv.conf")
             resolv_conf.write_text(original_content)
 
-def simulate_slow_start():
-    """Simulate slow starting container"""
-    print("Simulating slow starting container")
-    time.sleep(300)
-    print("Finally started after 5 minutes")
-    return 0
 
-def health_check():
-    """Health check endpoint that can fail in various ways"""
-    if Path("/tmp/fail-health-check").exists():
-        print("Health check failing as requested by /tmp/fail-health-check")
-        return 1
-    
-    hostname = os.getenv("HOSTNAME", "")
-    if "unhealthy" in hostname.lower():
-        print(f"Failing health check due to hostname: {hostname}")
-        return 1
-    
-    print("Health check passed")
-    return 0
 
 def main():
     # Determine which mode to run in
-    failure_mode = os.getenv("FAILURE_MODE", "").lower()
-    
-    if failure_mode == "oom":
-        sys.exit(simulate_oom())
-    elif failure_mode == "missing_file":
-        sys.exit(simulate_missing_file())
-    elif failure_mode == "dns":
-        sys.exit(simulate_dns_issues())
-    elif failure_mode == "slow_start":
-        sys.exit(simulate_slow_start())
-    elif failure_mode == "health_check":
-        sys.exit(health_check())
-    else:
-        print("Running in healthy mode")
-        while True:
-            time.sleep(60)
+
 
 if __name__ == "__main__":
     main()
