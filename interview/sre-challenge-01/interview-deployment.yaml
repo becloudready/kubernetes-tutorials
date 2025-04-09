@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interview-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: interview
+  template:
+    metadata:
+      labels:
+        app: interview
+    spec:
+      dnsPolicy: "None"  # Causes DNS issues
+      dnsConfig:
+        nameservers:
+          - "1.1.1.1"  # External DNS that won't resolve cluster services
+        searches:
+          - "xyz.namespace.svc.cluster.local"  # Incorrect search domain
+      containers:
+      - name: main
+        image: your-registry/interview-app:latest  # Update with your image
+        command: ["python", "/app/interview.py"]
+        volumeMounts:
+        - name: config-vol  # Doesn't match volume name
+          mountPath: /etc/app
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      volumes:
+      - name: config1-vol  # Intentional mismatch
+        configMap:
+          name: app-config
+          items:
+          - key: config1.yaml  # Key doesn't exist in ConfigMap
+            path: config1.yaml
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  config.yaml: |  # Note: Wrong (config.yaml vs config1.yaml)
+    database:
+      host: db-service
+      port: 5432
+    logging:
+      level: debug
