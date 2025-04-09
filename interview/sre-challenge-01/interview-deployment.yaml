@@ -20,7 +20,7 @@ spec:
           - "xyz.namespace.svc.cluster.local"  # Incorrect search domain
       containers:
       - name: main
-        image: your-registry/interview-app:latest  # Update with your image
+        image: becloudready/k8s-troubleshooting-scenarios:3.0.0  
         command: ["python", "/app/interview.py"]
         volumeMounts:
         - name: config-vol  # Doesn't match volume name
