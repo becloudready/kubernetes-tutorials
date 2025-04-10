@@ -12,30 +12,35 @@ spec:
       labels:
         app: interview
     spec:
-      dnsPolicy: "None"  # Causes DNS issues
+      # DNS Misconfiguration - Guaranteed to fail
+      dnsPolicy: "Default"
       dnsConfig:
         nameservers:
-          - "1.1.1.1"  # External DNS that won't resolve cluster services
+          - "203.0.113.123"  # Invalid nameserver
         searches:
-          - "xyz.namespace.svc.cluster.local"  # Incorrect search domain
+          - google.com  # Wrong search path
+        options:
+         - name: ndots
+           value: "1"   
+      
       containers:
       - name: main
-        image: becloudready/k8s-troubleshooting-scenarios:3.0.0  
-        command: ["python", "/app/interview.py"]
+        image: becloudready/k8s-troubleshooting-scenarios:5.0.0
+        command: ["python3", "/app/troubleshoot_scenarios.py"]
         volumeMounts:
         - name: config-vol  # Doesn't match volume name
           mountPath: /etc/app
         resources:
           limits:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "500m"
       volumes:
-      - name: config1-vol  # Intentional mismatch
+      - name: config-vol  # Intentional mismatch
         configMap:
           name: app-config
           items:
-          - key: config1.yaml  # Key doesn't exist in ConfigMap
-            path: config1.yaml
+          - key: config1.yml  # Incorrect key
+            path: config.yaml
 
 ---
 apiVersion: v1
@@ -43,7 +48,7 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  config.yaml: |  # Note: Wrong (config.yaml vs config1.yaml)
+  config.yml: |  # Correct file has .yml extension
     database:
       host: db-service
       port: 5432
