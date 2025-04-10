@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Use Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v10
+        uses: becloudready/k8s-interview-action@v11
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
