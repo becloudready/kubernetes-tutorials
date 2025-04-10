@@ -29,8 +29,8 @@ jobs:
   
 
       - name: Run Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v5
+        uses: becloudready/k8s-interview-action@v6
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          namespace: ${{ github.event.inputs.namespace || 'troubleshooting' }}
+          namespace: ${{ github.event.inputs.namespace || 'default' }}
   
