@@ -13,12 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       - name: Configure Kubernetes cluster
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Install requests module
+        run: |
+         python3 -m pip install --upgrade pip
+         python3 -m pip install requests    
 
 
 
@@ -27,4 +32,4 @@ jobs:
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ inputs.namespace }}
-          failure_mode: "oom"
+          
