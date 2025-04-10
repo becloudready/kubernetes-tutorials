@@ -4,11 +4,16 @@ on:
   workflow_dispatch:  # Only triggers when manually initiated from the GitHub UI
 
 jobs:
-  run-interview-action:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
 
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v12
