@@ -19,14 +19,10 @@ def check_config_map():
     print_header("ConfigMap Verification")
     config_path = "/etc/app/config.yaml"
     issues_found = 0
-    
+
     # Check file existence and readability
     if not Path(config_path).exists():
         print_result(False, f"Config file missing at {config_path}")
-        print("\nPossible causes:")
-        print("- Volume mount name mismatch in deployment")
-        print("- Wrong ConfigMap key specified")
-        print("- File extension mismatch (.yml vs .yaml)")
         issues_found += 1
     else:
         try:
@@ -37,7 +33,7 @@ def check_config_map():
         except Exception as e:
             print_result(False, f"Failed to read config - {str(e)}")
             issues_found += 1
-    
+
     # Check actual mounted files
     print("\nMounted files in /etc/app:")
     try:
@@ -45,7 +41,7 @@ def check_config_map():
             print(f"  - {f.name}")
     except Exception as e:
         print(f"Error reading directory: {str(e)}")
-    
+
     return issues_found == 0
 
 def check_dns_resolution():
@@ -57,7 +53,7 @@ def check_dns_resolution():
         "Config Reference": "db-service",
         "External API": "api.github.com"
     }
-    
+
     all_success = True
     for name, host in test_hosts.items():
         try:
@@ -68,13 +64,10 @@ def check_dns_resolution():
         except Exception as e:
             print_result(False, f"{name.ljust(20)} → Failed: {str(e)}")
             all_success = False
-    
+
     if not all_success:
         print("\nDNS Troubleshooting Steps:")
-        print("1. Check /etc/resolv.conf contents")
-        print("2. Verify deployment's dnsPolicy and dnsConfig")
-        print("3. Test with 'nslookup kubernetes.default'")
-    
+
     return all_success
 
 def check_network_connectivity():
@@ -85,7 +78,7 @@ def check_network_connectivity():
         "HTTPS": "https://google.com",
         "Cluster API": "https://kubernetes.default.svc.cluster.local"
     }
-    
+
     all_success = True
     for name, url in test_urls.items():
         try:
@@ -96,20 +89,20 @@ def check_network_connectivity():
         except Exception as e:
             print_result(False, f"{name.ljust(15)} → Failed: {str(e)}")
             all_success = False
-    
+
     return all_success
 
 def gather_system_info():
     """Collect diagnostic information"""
     print_header("System Diagnostics")
-    
+
     # DNS Configuration
     print("\n/etc/resolv.conf:")
     try:
         print(Path('/etc/resolv.conf').read_text())
     except Exception as e:
         print(f"Error: {str(e)}")
-    
+
     # Mount Information
     print("\nActive Mounts:")
     try:
@@ -119,27 +112,28 @@ def gather_system_info():
 
 def main():
     print("\033[1m=== Kubernetes Troubleshooting Diagnostic ===\033[0m")
-    
+
     # Run diagnostic checks
     config_ok = check_config_map()
     dns_ok = check_dns_resolution()
     network_ok = check_network_connectivity()
-    
+
     # Show detailed info if any checks failed
     if not all([config_ok, dns_ok, network_ok]):
         gather_system_info()
-        
+
         print("\n\033[1mTROUBLESHOOTING GUIDE:\033[0m")
         if not config_ok:
             print("\nConfigMap Issues Detected:")
 
         if not dns_ok or not network_ok:
             print("\nDNS/Network Issues Detected:")
+        sys.exit(1)
 
-    
     print("\nDiagnostic complete. Container will remain running...")
     while True:
         time.sleep(3600)  # Keep container alive
 
 if __name__ == "__main__":
     main()
+
