@@ -20,9 +20,9 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
 
-      - name: Apply Deployment and ConfigMap to Kubernetes
+      - name: Create Kubernetes YAML file
         run: |
-          kubectl apply -f - <<EOF
+          echo "
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,35 +37,33 @@ spec:
       labels:
         app: interview
     spec:
-      # DNS Misconfiguration - Guaranteed to fail
-      dnsPolicy: "Default"
+      dnsPolicy: Default
       dnsConfig:
         nameservers:
-          - "203.0.113.123"  # Invalid nameserver
+          - '203.0.113.123'  # Invalid nameserver
         searches:
           - google.com  # Wrong search path
         options:
-         - name: ndots
-           value: "1"
-
+          - name: ndots
+            value: '1'
       containers:
-      - name: main
-        image: becloudready/k8s-troubleshooting-scenarios:5.0.0
-        command: ["python3", "/app/troubleshoot_scenarios.py"]
-        volumeMounts:
-        - name: config-vol  # Doesn't match volume name
-          mountPath: /etc/app
-        resources:
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
+        - name: main
+          image: becloudready/k8s-troubleshooting-scenarios:5.0.0
+          command: ['python3', '/app/troubleshoot_scenarios.py']
+          volumeMounts:
+            - name: config-vol  # Doesn't match volume name
+              mountPath: /etc/app
+          resources:
+            limits:
+              memory: '256Mi'
+              cpu: '500m'
       volumes:
-      - name: config-vol  # Intentional mismatch
-        configMap:
-          name: app-config
-          items:
-          - key: config1.yml  # Incorrect key
-            path: config.yaml
+        - name: config-vol  # Intentional mismatch
+          configMap:
+            name: app-config
+            items:
+              - key: config1.yml  # Incorrect key
+                path: config.yaml
 
 ---
 apiVersion: v1
@@ -73,13 +71,17 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  config.yml: |  # Correct file has .yml extension
+  config.yml: |
     database:
       host: db-service
       port: 5432
     logging:
       level: debug
-EOF
+          " > interview-deployment.yaml
+
+      - name: Apply Deployment and ConfigMap to Kubernetes
+        run: |
+          kubectl apply -f interview-deployment.yaml
 
       - name: Run Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v1
@@ -87,4 +89,5 @@ EOF
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ inputs.namespace }}
           failure_mode: "oom"
+
 
