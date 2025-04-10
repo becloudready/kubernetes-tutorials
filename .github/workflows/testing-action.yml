@@ -23,72 +23,55 @@ jobs:
 
       - name: Create Kubernetes YAML file
         run: |
-          echo "
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: interview-app
-  namespace: ${{ inputs.namespace || 'troubleshooting' }}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: interview
-  template:
-    metadata:
-      labels:
-        app: interview
-    spec:
-      dnsPolicy: ClusterFirst
-      dnsConfig:
-        nameservers:
-          - '8.8.8.8'  # Valid public nameserver
-        searches:
-          - ${{ inputs.namespace || 'troubleshooting' }}.svc.cluster.local
-        options:
-          - name: ndots
-            value: '2'
-      containers:
-        - name: main
-          image: becloudready/k8s-troubleshooting-scenarios:5.0.0
-          command: ['python3', '/app/troubleshoot_scenarios.py']
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/app
-          resources:
-            limits:
-              memory: '256Mi'
-              cpu: '500m'
-      volumes:
-        - name: config-volume
-          configMap:
+          cat <<EOF > interview-deployment.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: interview-app
+            namespace: ${{ github.event.inputs.namespace || 'troubleshooting' }}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: interview
+            template:
+              metadata:
+                labels:
+                  app: interview
+              spec:
+                dnsPolicy: ClusterFirst
+                dnsConfig:
+                  nameservers:
+                    - '8.8.8.8'
+                  searches:
+                    - ${{ github.event.inputs.namespace || 'troubleshooting' }}.svc.cluster.local
+                  options:
+                    - name: ndots
+                      value: '2'
+                containers:
+                  - name: main
+                    image: becloudready/k8s-troubleshooting-scenarios:5.0.0
+                    command: ['python3', '/app/troubleshoot_scenarios.py']
+                    volumeMounts:
+                      - name: config-volume
+                        mountPath: /etc/app
+                    resources:
+                      limits:
+                        memory: '256Mi'
+                        cpu: '500m'
+                volumes:
+                  - name: config-volume
+                    configMap:
+                      name: app-config
+                      items:
+                        - key: config.yml
+                          path: config.yaml
+
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
             name: app-config
-            items:
-              - key: config.yml  # Correct key matching ConfigMap
-                path: config.yaml
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-  namespace: ${{ inputs.namespace || 'troubleshooting' }}
-data:
-  config.yml: |
-    database:
-      host: db-service
-      port: 5432
-    logging:
-      level: debug
-          " > interview-deployment.yaml
-
-      - name: Apply Deployment and ConfigMap to Kubernetes
-        run: |
-          kubectl apply -f interview-deployment.yaml
-
-      - name: Run Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v1
-        with:
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-          namespace: ${{ inputs.namespace || 'troubleshooting' }}
-          failure_mode: "oom"
+            namespace: ${{ github.event.inputs.namespace || 'troubleshooting' }}
+          data:
+            config
