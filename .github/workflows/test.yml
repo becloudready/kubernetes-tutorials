@@ -1,0 +1,17 @@
+name: 'Kubernetes Interview Troubleshooting'
+
+on:
+  workflow_dispatch:  # Only triggers when manually initiated from the GitHub UI
+
+jobs:
+  run-interview-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Use Kubernetes Troubleshooting Action
+        uses: becloudready/k8s-interview-action@v10
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
