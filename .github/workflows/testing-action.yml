@@ -33,4 +33,8 @@ jobs:
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ github.event.inputs.namespace || 'default' }}
+      - name: Apply Deployment and ConfigMap to Kubernetes
+        run: |
+              ls
+              pwd     
   
