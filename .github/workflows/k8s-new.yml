@@ -18,12 +18,7 @@ jobs:
       - name: Configure Kubernetes cluster
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-
-      - name: Install requests module
-        run: |
-         python3 -m pip install --upgrade pip
-         python3 -m pip install requests    
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config   
 
 
 
