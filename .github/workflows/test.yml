@@ -16,7 +16,7 @@ jobs:
           kubectl version --client
 
       - name: Use Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v12
+        uses: becloudready/k8s-interview-action@v13
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
