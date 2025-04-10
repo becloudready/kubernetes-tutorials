@@ -19,6 +19,7 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Create Kubernetes YAML file
         run: |
@@ -27,6 +28,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: interview-app
+  namespace: ${{ inputs.namespace || 'troubleshooting' }}
 spec:
   replicas: 1
   selector:
@@ -37,32 +39,32 @@ spec:
       labels:
         app: interview
     spec:
-      dnsPolicy: Default
+      dnsPolicy: ClusterFirst
       dnsConfig:
         nameservers:
-          - '203.0.113.123'  # Invalid nameserver
+          - '8.8.8.8'  # Valid public nameserver
         searches:
-          - google.com  # Wrong search path
+          - ${{ inputs.namespace || 'troubleshooting' }}.svc.cluster.local
         options:
           - name: ndots
-            value: '1'
+            value: '2'
       containers:
         - name: main
           image: becloudready/k8s-troubleshooting-scenarios:5.0.0
           command: ['python3', '/app/troubleshoot_scenarios.py']
           volumeMounts:
-            - name: config-vol  # Doesn't match volume name
+            - name: config-volume
               mountPath: /etc/app
           resources:
             limits:
               memory: '256Mi'
               cpu: '500m'
       volumes:
-        - name: config-vol  # Intentional mismatch
+        - name: config-volume
           configMap:
             name: app-config
             items:
-              - key: config1.yml  # Incorrect key
+              - key: config.yml  # Correct key matching ConfigMap
                 path: config.yaml
 
 ---
@@ -70,6 +72,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-config
+  namespace: ${{ inputs.namespace || 'troubleshooting' }}
 data:
   config.yml: |
     database:
@@ -87,7 +90,5 @@ data:
         uses: becloudready/k8s-interview-action@v1
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          namespace: ${{ inputs.namespace }}
+          namespace: ${{ inputs.namespace || 'troubleshooting' }}
           failure_mode: "oom"
-
-
