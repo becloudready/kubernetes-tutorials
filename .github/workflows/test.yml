@@ -25,4 +25,8 @@ jobs:
         uses: becloudready/k8s-interview-action@v16
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
+      - name: Apply Deployment and ConfigMap to Kubernetes
+        run: |
+              ls
+              pwd 
 
