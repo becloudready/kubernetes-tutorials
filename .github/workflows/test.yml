@@ -22,11 +22,11 @@ jobs:
              
 
       - name: Use Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v18
+        uses: becloudready/k8s-interview-action@v20
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
       - name: Apply Deployment and ConfigMap to Kubernetes
         run: |
-              ls /actions
+              ls 
               pwd 
 
