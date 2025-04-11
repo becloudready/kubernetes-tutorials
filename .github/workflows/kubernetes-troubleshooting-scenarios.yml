@@ -1,4 +1,4 @@
-name: Deploy Kubernetes Troubleshooting Scenarios
+name: Deploy Interview App
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 env:
   IMAGE_NAME: becloudready/k8s-troubleshooting-scenarios
-  IMAGE_TAG: 2.0.0
+  IMAGE_TAG: 7.0.0
 
 jobs:
   deploy:
@@ -34,145 +34,70 @@ jobs:
       run: |
         kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
 
-    - name: Deploy OOM Killer Scenario
+    - name: Apply ConfigMap
+      run: |
+        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: app-config
+        data:
+          config.yml: |
+            database:
+              host: db-service
+              port: 5432
+            logging:
+              level: debug
+        EOF
+
+    - name: Deploy Interview App
       run: |
         cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name: oom-deployment
+          name: interview-app
         spec:
           replicas: 1
           selector:
             matchLabels:
-              app: oom-app
+              app: interview
           template:
             metadata:
               labels:
-                app: oom-app
+                app: interview
             spec:
+              dnsPolicy: "Default"
+              dnsConfig:
+                nameservers:
+                  - "203.0.113.123"
+                searches:
+                  - google.com
+                options:
+                 - name: ndots
+                   value: "1"
               containers:
-              - name: oom-container
-                image: becloudready/k8s-troubleshooting-scenarios:2.0.0
-                env:
-                - name: FAILURE_MODE
-                  value: "oom"
+              - name: main
+                image: \${{ env.IMAGE_NAME }}:\${{ env.IMAGE_TAG }}
+                command: ["python3", "/app/troubleshoot_scenarios.py"]
+                volumeMounts:
+                - name: config-vol
+                  mountPath: /etc/app
                 resources:
                   limits:
-                    memory: "128Mi"
+                    memory: "256Mi"
+                    cpu: "500m"
+              volumes:
+              - name: config-vol
+                configMap:
+                  name: app-config
+                  items:
+                  - key: config1.yml
+                    path: config.yaml
         EOF
 
-    - name: Deploy Missing File Scenario
+    - name: Verify Deployment
       run: |
-        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: missing-file-deployment
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              app: missing-file-app
-          template:
-            metadata:
-              labels:
-                app: missing-file-app
-            spec:
-              containers:
-              - name: missing-file-container
-                image: becloudready/k8s-troubleshooting-scenarios:2.0.0
-                env:
-                - name: FAILURE_MODE
-                  value: "missing_file"
-        EOF
+        kubectl get pods -n ${{ inputs.namespace }}
 
-    - name: Deploy DNS Issues Scenario
-      run: |
-        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: dns-issues-deployment
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              app: dns-issues-app
-          template:
-            metadata:
-              labels:
-                app: dns-issues-app
-            spec:
-              dnsPolicy: Default
-              containers:
-              - name: dns-issues-container
-                image: becloudready/k8s-troubleshooting-scenarios:2.0.0
-                env:
-                - name: FAILURE_MODE
-                  value: "dns"
-        EOF
-
-    - name: Deploy Taints and Tolerations Example
-      run: |
-        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: tolerations-deployment
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              app: tolerations-app
-          template:
-            metadata:
-              labels:
-                app: tolerations-app
-            spec:
-              tolerations:
-              - key: "dedicated"
-                operator: "Equal"
-                value: "gpu"
-                effect: "NoSchedule"
-              containers:
-              - name: tolerations-container
-                image: becloudready/k8s-troubleshooting-scenarios:2.0.0
-        EOF
-
-    - name: Deploy Affinity/Anti-affinity Example
-      run: |
-        cat <<EOF | kubectl apply -n ${{ inputs.namespace }} -f -
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: affinity-deployment
-        spec:
-          replicas: 3
-          selector:
-            matchLabels:
-              app: affinity-app
-          template:
-            metadata:
-              labels:
-                app: affinity-app
-            spec:
-              affinity:
-                podAntiAffinity:
-                  requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchExpressions:
-                      - key: app
-                        operator: In
-                        values:
-                        - affinity-app
-                    topologyKey: "kubernetes.io/hostname"
-              containers:
-              - name: affinity-container
-                image: becloudready/k8s-troubleshooting-scenarios:2.0.0
-        EOF
-
-    - name: Verify deployments
-      run: |
-        kubectl get deployments -n ${{ inputs.namespace }}
       
