@@ -19,16 +19,13 @@ jobs:
         run: |
          mkdir -p ~/.kube
          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-         mkdir -p /github/home/.kube/
-         touch config
-         echo "${{ secrets.KUBECONFIG }}" > /github/home/.kube/config
          kubectl get pods -A
              
 
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v28
-        with:
-         kubeconfig: ${{ secrets.KUBECONFIG }}
+        env:
+          KUBECONFIG: /home/runner/.kube/config
           
       - name: Apply Deployment and ConfigMap to Kubernetes
         run: |
