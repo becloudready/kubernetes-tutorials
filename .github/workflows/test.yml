@@ -19,6 +19,7 @@ jobs:
         run: |
          mkdir -p ~/.kube
          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+         kubectl get pods -A
              
 
       - name: Use Kubernetes Troubleshooting Action
