@@ -15,6 +15,12 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
           kubectl version --client
 
+      - name: Configure Kubernetes cluster
+        run: |
+         mkdir -p ~/.kube
+         echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+             
+
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v14
         with:
