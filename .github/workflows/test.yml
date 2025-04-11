@@ -23,7 +23,7 @@ jobs:
              
 
       - name: Use Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v28
+        uses: becloudready/k8s-interview-action@v27
         env:
           KUBECONFIG: /home/runner/.kube/config
           
