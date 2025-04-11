@@ -25,7 +25,7 @@ jobs:
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v29
         env:
-          KUBECONFIG: /home/runner/.kube/config
+          KUBECONFIG: ${{ secrets.KUBECONFIG }
           
       - name: Apply Deployment and ConfigMap to Kubernetes
         run: |
