@@ -20,7 +20,8 @@ jobs:
          mkdir -p ~/.kube
          echo "${{ vars.KUBECONFIG }}" > ~/.kube/config
          kubectl get pods -A
-             
+      - name: Export kubeconfig path
+        run: echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV        
 
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v35
