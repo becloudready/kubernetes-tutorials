@@ -24,8 +24,9 @@ jobs:
 
       - name: Use Kubernetes Troubleshooting Action
         uses: becloudready/k8s-interview-action@v25
-        with:
-          kubeconfig: 
+        env:
+          KUBECONFIG: /root/.kube/config
+          
       - name: Apply Deployment and ConfigMap to Kubernetes
         run: |
               ls 
