@@ -19,6 +19,7 @@ jobs:
         run: |
          mkdir -p ~/.kube
          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+         echo "${{ secrets.KUBECONFIG }}" > /github/home/.kube/config
          kubectl get pods -A
              
 
