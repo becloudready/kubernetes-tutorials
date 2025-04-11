@@ -23,7 +23,7 @@ jobs:
              
 
       - name: Use Kubernetes Troubleshooting Action
-        uses: becloudready/k8s-interview-action@v29
+        uses: becloudready/k8s-interview-action@v31
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
           
