@@ -29,7 +29,7 @@ You’ll work with **Docker**, **Kubernetes ConfigMaps**, **Secrets**, **Deploym
 ---
 
 ### 2. Architectural Diagram 
-![Architecture Diagram](django_app.io)
+![Architecture Diagram](django_app.png)
 
 ### 3. ⚙️ Kubernetes Manifests
 
