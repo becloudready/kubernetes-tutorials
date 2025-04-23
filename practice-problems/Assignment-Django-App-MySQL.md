@@ -28,7 +28,10 @@ You’ll work with **Docker**, **Kubernetes ConfigMaps**, **Secrets**, **Deploym
 
 ---
 
-### 2. ⚙️ Kubernetes Manifests
+### 2. Architectural Diagram 
+![Architecture Diagram](Python-MySQL-Project.png)
+
+### 3. ⚙️ Kubernetes Manifests
 
 #### a. 🧾 ConfigMap
 
@@ -72,4 +75,4 @@ You’ll work with **Docker**, **Kubernetes ConfigMaps**, **Secrets**, **Deploym
   ```bash
   kubectl get svc
 Access the Django Admin Panel at:
-http://<EXTERNAL-IP>/admin
+http://EXTERNAP-IP/admin
