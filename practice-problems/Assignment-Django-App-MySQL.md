@@ -29,7 +29,7 @@ You’ll work with **Docker**, **Kubernetes ConfigMaps**, **Secrets**, **Deploym
 ---
 
 ### 2. Architectural Diagram 
-![Architecture Diagram](Python-MySQL-Project.png)
+![Architecture Diagram](django_app.io)
 
 ### 3. ⚙️ Kubernetes Manifests
 
