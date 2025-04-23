@@ -1,42 +1,75 @@
-# Kubernetes & Docker Assignment: Django & MySQL Deployment
+# 📘 Kubernetes & Docker Assignment: Django & MySQL Deployment
 
+## 🚀 Overview
 
-## Overview
+In this assignment, you will build and deploy a containerized Django web application backed by a MySQL database. The two components will be hosted on a public cloud Kubernetes cluster, following production-style best practices.
 
-In this assignment, you are required to build a containerized application that consists of a Django web application and a MySQL database. The two components will be deployed on a public cloud Kubernetes cluster with proper configuration management. You’ll work with Docker, ConfigMaps, Secrets, Services, and Deployments — and use a MySQL backend in a production-style environment.
+You’ll work with **Docker**, **Kubernetes ConfigMaps**, **Secrets**, **Deployments**, and **Services**, leveraging **MySQL** as the backend. This simulates a real-world DevOps workflow using infrastructure-as-code principles.
 
-## 📦 What’s Provided
+---
 
-- A basic Django project with a single app.
-- Default `settings.py` (Use the Database values from here).
+## 📂 What’s Provided
+
+- A basic Django project with one app.
+- A default `settings.py` file (use database values from here).
 - Example models and views for testing.
 
-Your task is to containerize the Django application, build and push its Docker image to Docker Hub, and deploy both the Flask app and MySQL database on Kubernetes following the guidelines described below.
+---
 
-## Assignment Requirements
-1. **Containerization & Docker:**
-   - Write a `Dockerfile` to containerize the Django application.
-   - The image should:
-   - Install dependencies from `requirements.txt`.
-   - Run migrations automatically.
-   - Start the Django development server on port 8000.
+## ✅ Assignment Requirements
 
-2. **Kubernetes Manifests:**
-   - **ConfigMaps:**
-     - Create a ConfigMap with data containing MYSQL_HOST, MYSQL_PORT and MYSQL_DATABASE.
-     - hint (refer to values in django_project/settings.py file)  
-   - **Secrets:**
-     - Create a Secret for the database credentials. (The correct values are: `MYSQL_USER: django`, `MYSQL_PASSWORD: securepassword`.)
-   - **MySQL Deployment:**
-     - Deploy a Mysql pod use image mysql:8, use the env variables created via ConfigMap and Secret in the above steps.
-   - **Django Deployment:**
-     - Deploy the Django application using a Deployment use containerport 8000.
-     - Configure the Deployment to load environment variables from the ConfigMap and Secret.
-   - **Services:**
-     -  Expose both MySQL (ClusterIP) and Django (LoadBalancer) services.
-     - Create a ClusterIP Service for MySQL (Port 3306) Loadbalancer service port 80 and target port 8000.
-    
-3. **Validation & Testing:**
-   - Ensure that the Django application can connect to the MySQL database using the provided credentials.
-   - Use kubectl get svc to get the EXTERNAL-IP of your LoadBalancer.
-     Then open: http://<EXTERNAL-IP>/admin.
+### 1. 🐳 Containerization with Docker
+
+- Create a `Dockerfile` to containerize the Django application.
+- Your Docker image must:
+  - Install dependencies from `requirements.txt`
+  - Automatically run database migrations
+  - Start the Django development server on port **8000**
+
+---
+
+### 2. ⚙️ Kubernetes Manifests
+
+#### a. 🧾 ConfigMap
+
+- Create a ConfigMap with the following keys:
+  - `MYSQL_HOST`
+  - `MYSQL_PORT`
+  - `MYSQL_DATABASE`
+- 💡 *Hint:* Use the environment variable names referenced in `django_project/settings.py`.
+
+#### b. 🔐 Secret
+
+- Create a Secret containing database credentials:
+  - `MYSQL_USER: django`
+  - `MYSQL_PASSWORD: securepassword`
+
+#### c. 🐘 MySQL Deployment
+
+- Deploy MySQL using the `mysql:8` image.
+- Use environment variables from the ConfigMap and Secret.
+
+#### d. 🌐 Django Deployment
+
+- Deploy the Django application using your custom Docker image.
+- Expose container port **8000**
+- Load environment variables from both the ConfigMap and Secret.
+
+#### e. 🌉 Kubernetes Services
+
+- Create a **ClusterIP** service for MySQL on port **3306**
+- Create a **LoadBalancer** service for Django:
+  - Service port: **80**
+  - Target port: **8000**
+
+---
+
+## 🔍 Validation & Testing
+
+- Ensure the Django app connects to the MySQL database using the provided credentials.
+- Use the following command to retrieve the external IP of your LoadBalancer:
+
+  ```bash
+  kubectl get svc
+Access the Django Admin Panel at:
+http://<EXTERNAL-IP>/admin
